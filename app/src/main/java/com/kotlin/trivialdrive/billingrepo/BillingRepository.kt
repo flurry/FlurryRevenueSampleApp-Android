@@ -468,6 +468,8 @@ class BillingRepository private constructor(private val application: Application
         localCacheBillingClient.entitlementsDao().getGoldStatus()
     }
 
+    private val skuDetailsMap = HashMap<String, SkuDetails>()
+
     // END list of each distinct item user may own (i.e. entitlements)
 
     /**
@@ -639,12 +641,14 @@ class BillingRepository private constructor(private val application: Application
         FlurryAgent.logPayment(productId, productId, 1, getPrice(productId), "Dollar", transactionId, params)
     }
 
-    private fun getPrice(productId: String) = when (productId) {
-        "premium_car" -> 19.99
-        "gas" -> 0.99
-        "gold_yearly" -> 9.99
-        "gold_monthly" -> 0.99
-        else -> -1.0
+    private fun getPrice(productId: String): Double {
+        val value = skuDetailsMap[productId]?.priceAmountMicros
+
+        return if (value == null) {
+            (-1).toDouble()
+        } else {
+            value.toDouble() / (100000).toDouble()
+        }
     }
 
     /**
@@ -805,6 +809,7 @@ class BillingRepository private constructor(private val application: Application
         val oldSku: String? = getOldSku(skuDetails.sku)
         val purchaseParams = BillingFlowParams.newBuilder().setSkuDetails(skuDetails)
                 .setOldSku(oldSku).build()
+        skuDetailsMap[skuDetails.sku] = skuDetails
         playStoreBillingClient.launchBillingFlow(activity, purchaseParams)
     }
 
