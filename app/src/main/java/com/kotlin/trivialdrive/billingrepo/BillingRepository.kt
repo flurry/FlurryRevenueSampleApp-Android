@@ -628,6 +628,11 @@ class BillingRepository private constructor(private val application: Application
     private fun logPayment(purchase: Purchase) {
         val productId = purchase.sku
         val transactionId = purchase.orderId
+        val price = getPrice(productId)
+
+        if (price == (-1).toDouble()) {
+            return
+        }
 
         val params = HashMap<String, String>()
 
@@ -638,7 +643,7 @@ class BillingRepository private constructor(private val application: Application
         params["acknowledged"] = purchase.isAcknowledged.toString()
         params["auto_renewing"] = purchase.isAutoRenewing.toString()
 
-        FlurryAgent.logPayment(productId, productId, 1, getPrice(productId), "Dollar", transactionId, params)
+        FlurryAgent.logPayment(productId, productId, 1, price, "Dollar", transactionId, params)
     }
 
     private fun getPrice(productId: String): Double {
