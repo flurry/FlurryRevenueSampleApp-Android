@@ -647,7 +647,7 @@ class BillingRepository private constructor(private val application: Application
         return if (value == null) {
             (-1).toDouble()
         } else {
-            value.toDouble() / (100000).toDouble()
+            value.toDouble() / (1000000).toDouble()
         }
     }
 
